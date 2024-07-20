@@ -1,35 +1,49 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import { Darkmode, Lightmode } from "./assets";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [theme, setTheme] = useState<string | null>(null);
+
+  useEffect(() => {
+    const storedTheme = localStorage.getItem("color-theme");
+    const prefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)"
+    ).matches;
+    if (storedTheme === "dark" || (!storedTheme && prefersDark)) {
+      setTheme("dark");
+      document.documentElement.classList.add("dark");
+    } else {
+      setTheme("light");
+      document.documentElement.classList.remove("dark");
+    }
+  }, []);
+
+  const handleThemeToggle = () => {
+    if (theme === "dark") {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("color-theme", "light");
+      setTheme("light");
+    } else {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("color-theme", "dark");
+      setTheme("dark");
+    }
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <section className=" dark:bg-darkBg bg-lightBg h-screen w-full bg-[linear-gradient(147deg,#f9fcff_0%,#dee4ea_74%)] dark:bg-[linear-gradient(315deg,#2b4162_0%,#12100e_74%)]">
+      <div className="w-full flex justify-end">
+        <button
+          id="theme-toggle"
+          type="button"
+          onClick={handleThemeToggle}
+          className="text-gray-500   dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5"
+        >
+          {theme == "dark" ? <Lightmode /> : <Darkmode />}
         </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </section>
+  );
 }
 
-export default App
+export default App;
