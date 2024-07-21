@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import Button from "./ui/Button";
 import { SocketContext } from "../context/socketContext";
 import {
@@ -12,67 +12,37 @@ import {
 } from "../assets/staticIcons";
 
 const Controls = () => {
-  const context = useContext(SocketContext);
-  const [muted, setMuted] = useState<boolean>(false);
-  const [camera, setCamera] = useState<boolean>(false);
-  const [volume, setVolume] = useState<boolean>(false);
+  const socketContext = useContext(SocketContext);
   return (
     <section className="flex gap-2 w-full items-center justify-center mt-5">
-      {muted == false ? (
-        <Button
-          type="button"
-          onClick={() => setMuted(!muted)}
-          className="flex items-center justify-center"
-        >
-          <img src={Mic} />
-        </Button>
-      ) : (
-        <Button
-          type="button"
-          onClick={() => setMuted(!muted)}
-          className="flex items-center justify-center"
-        >
-          <img src={MicOff} />
-        </Button>
-      )}
-      {camera == false ? (
-        <Button
-          type="button"
-          onClick={() => setCamera(!camera)}
-          className="flex items-center justify-center"
-        >
-          <img src={Camera} />
-        </Button>
-      ) : (
-        <Button
-          type="button"
-          onClick={() => setCamera(!camera)}
-          className="flex items-center justify-center"
-        >
-          <img src={CameraOff} />
-        </Button>
-      )}
-      {volume == false ? (
-        <Button
-          type="button"
-          onClick={() => setVolume(!volume)}
-          className="flex items-center justify-center"
-        >
-          <img src={Volume} />
-        </Button>
-      ) : (
-        <Button
-          type="button"
-          onClick={() => setVolume(!volume)}
-          className="flex items-center justify-center"
-        >
-          <img src={VolumeOff} />
-        </Button>
-      )}
       <Button
         type="button"
-        onClick={context?.leaveCall}
-        className="flex items-center justify-center  !bg-red-500"
+        onClick={() => socketContext?.toggleMute()}
+        className="flex items-center justify-center "
+      >
+        <img src={socketContext?.isMuted == false ? Mic : MicOff} />
+      </Button>
+
+      <Button
+        type="button"
+        onClick={() => socketContext?.toggleVideo()}
+        className="flex items-center justify-center"
+      >
+        <img src={socketContext?.isVideoOff == false ? Camera : CameraOff} />
+      </Button>
+
+      <Button
+        type="button"
+        onClick={() => socketContext?.setIsVolume(!socketContext.isVolume)}
+        className="flex items-center justify-center"
+      >
+        <img src={socketContext?.isVolume == false ? Volume : VolumeOff} />
+      </Button>
+
+      <Button
+        type="button"
+        onClick={socketContext?.leaveCall}
+        className="flex items-center justify-center  dark:!bg-red-500 !bg-red-500"
       >
         <img src={CallEndIcon} />
       </Button>

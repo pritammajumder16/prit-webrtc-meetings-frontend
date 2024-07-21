@@ -4,17 +4,31 @@ import { SocketContext } from "../context/socketContext";
 import { SocketContextType } from "../types/interface";
 
 const VideoPlayer = () => {
-  const context = useContext<SocketContextType | undefined>(SocketContext);
+  const socketContext = useContext<SocketContextType | undefined>(
+    SocketContext
+  );
   return (
-    <div className="mt-10 text-black dark:text-white">
-      {context?.stream && (
-        <div>
-          <video playsInline muted autoPlay ref={context?.myVideo} />
+    <div className="mt-10 text-black dark:text-white gap-5 flex flex-wrap items-center justify-center">
+      {socketContext?.stream && (
+        <div className="flex flex-col items-center gap-2 ">
+          <span className="font-semibold text-xl">You</span>
+          <video
+            className="h-96"
+            playsInline
+            muted
+            autoPlay
+            ref={socketContext?.localVideo}
+          />
         </div>
       )}
-      <div>
-        <video playsInline autoPlay ref={context?.userVideo} />
-      </div>
+      {socketContext?.call && (
+        <div className="flex flex-col items-center gap-2 ">
+          <span className="font-semibold text-xl">
+            {socketContext.call?.callerName}
+          </span>
+          <video playsInline autoPlay ref={socketContext?.remoteVideo} />
+        </div>
+      )}
     </div>
   );
 };

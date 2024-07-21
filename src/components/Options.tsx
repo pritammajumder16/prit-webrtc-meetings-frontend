@@ -5,10 +5,8 @@ import { SocketContext } from "../context/socketContext";
 import Input from "./ui/Input";
 import Button from "./ui/Button";
 import { AssignmentIcon, CallIcon } from "../assets/staticIcons";
-import { generateGuestName } from "../utils/generateGuestName";
 const Options = ({ children }: { children: React.ReactNode }) => {
-  const context = useContext(SocketContext);
-  const [name, setName] = useState<string>(generateGuestName());
+  const socketContext = useContext(SocketContext);
   const [idToCall, setIdToCall] = useState<string>("");
 
   return (
@@ -24,14 +22,14 @@ const Options = ({ children }: { children: React.ReactNode }) => {
           </div>
           <Input
             label={"Enter your name"}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={socketContext?.name}
+            onChange={(e) => socketContext?.setName(e.target.value)}
           />
 
           <div className="">
-            <span>Your ID is</span> <span>{context?.myUserId}</span>
+            <span>Your ID is</span> <span>{socketContext?.myUserId}</span>
           </div>
-          <CopyToClipboard text={context?.myUserId || ""}>
+          <CopyToClipboard text={socketContext?.myUserId || ""}>
             <Button
               type="button"
               className="flex-1 flex items-center justify-center text-nowrap whitespace-nowrap"
@@ -57,9 +55,9 @@ const Options = ({ children }: { children: React.ReactNode }) => {
           <Button
             type="button"
             onClick={() => {
-              context?.callUser(idToCall);
+              socketContext?.callUser(idToCall);
             }}
-            disabled={!name || !idToCall}
+            disabled={!socketContext?.name || !idToCall}
             className="flex h-fit items-center justify-center"
           >
             <img src={CallIcon} /> Call

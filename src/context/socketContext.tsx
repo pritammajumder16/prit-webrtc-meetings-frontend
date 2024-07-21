@@ -3,6 +3,7 @@ import { createContext, useState, useRef, useEffect, ReactNode } from "react";
 import Peer from "simple-peer";
 import { SocketContextType } from "../types/interface";
 import { generateUniqueId } from "../utils/generateUniqueId";
+import { generateGuestName } from "../utils/generateGuestName";
 
 export const SocketContext = createContext<SocketContextType | undefined>(
   undefined
@@ -14,17 +15,19 @@ export const SocketContextProvider = ({
   children: ReactNode;
 }) => {
   const [stream, setStream] = useState<MediaStream>();
-  const myVideo = useRef<HTMLVideoElement>(null);
-  const userVideo = useRef<HTMLVideoElement>(null);
+  const localVideo = useRef<HTMLVideoElement>(null);
+  const remoteVideo = useRef<HTMLVideoElement>(null);
   const connectionRef = useRef<Peer.Instance>();
   const [callAccepted, setCallAccepted] = useState(false);
   const [callEnded, setCallEnded] = useState(false);
   const [call, setCall] = useState<any>();
   const [myUserId, setMyUserId] = useState<string>("");
-
+  const [name, setName] = useState<string>(generateGuestName());
   const socket = useRef<WebSocket | null>(null); // Use useRef to store the WebSocket instance
   const uniqueId = useRef(generateUniqueId()).current; // Use a ref to keep the uniqueId constant
-
+  const [isMuted, setIsMuted] = useState<boolean>(false);
+  const [isVolume, setIsVolume] = useState<boolean>(false);
+  const [isVideoOff, setIsVideoOff] = useState<boolean>(false);
   useEffect(() => {
     socket.current = new WebSocket(`ws://localhost:8080?userId=${uniqueId}`);
 
@@ -36,8 +39,8 @@ export const SocketContextProvider = ({
       .then((currentStream) => {
         console.log("Media stream obtained:", currentStream);
         setStream(currentStream);
-        if (myVideo.current) {
-          myVideo.current.srcObject = currentStream;
+        if (localVideo.current) {
+          localVideo.current.srcObject = currentStream;
         }
       })
       .catch((error) => {
@@ -45,7 +48,6 @@ export const SocketContextProvider = ({
       });
 
     socketInstance.onopen = () => {
-      console.log("WebSocket connected");
       socketInstance.onmessage = (message) => {
         const data = JSON.parse(message.data);
         console.log("Message received:", data);
@@ -80,17 +82,22 @@ export const SocketContextProvider = ({
   }, [uniqueId]);
 
   const handleIncomingCall = (data: any) => {
-    console.log("incoming call:", data);
     setCall({
       isReceivedCall: true,
       callerId: data.callerId,
       signalData: data.signalData,
+      callerName: data.callerName,
     });
   };
 
   const handleCallAccepted = (data: any) => {
-    console.log("Call accepted with signal data:", data.signalData);
     setCallAccepted(true);
+    setCall({
+      isReceivedCall: false,
+      callerId: data.callerId,
+      signalData: data.signalData,
+      callerName: data.callerName,
+    });
     connectionRef.current?.signal(data.signalData);
   };
 
@@ -107,6 +114,8 @@ export const SocketContextProvider = ({
             eventType: "answer_call",
             signalData: signal,
             callerId: call.callerId,
+            myuserId: myUserId,
+            myName: name,
           })
         );
       } else {
@@ -118,12 +127,12 @@ export const SocketContextProvider = ({
       console.log(
         "Received remote stream -- Non initiator",
         currentStream,
-        userVideo.current
+        remoteVideo.current
       );
-      if (userVideo.current) {
+      if (remoteVideo.current) {
         console.log("playing");
-        userVideo.current.srcObject = currentStream;
-        userVideo.current.play().catch((error) => {
+        remoteVideo.current.srcObject = currentStream;
+        remoteVideo.current.play().catch((error) => {
           console.error("Error playing video stream:", error);
         });
       }
@@ -147,11 +156,6 @@ export const SocketContextProvider = ({
   const callUser = (id: string) => {
     console.log("Calling user:", id);
 
-    if (!stream) {
-      console.error("No media stream available.");
-      return;
-    }
-
     const peer = new Peer({ initiator: true, trickle: false, stream });
 
     peer.on("signal", (signal) => {
@@ -161,14 +165,18 @@ export const SocketContextProvider = ({
           targetId: id,
           callerId: myUserId,
           signalData: signal,
+          callerName: name,
         })
       );
     });
 
     peer.on("stream", (currentStream) => {
       console.log("Received remote stream -- initiator user");
-      if (userVideo.current) {
-        userVideo.current.srcObject = currentStream;
+      if (remoteVideo.current) {
+        remoteVideo.current.srcObject = currentStream;
+        remoteVideo.current.play().catch((error) => {
+          console.error("Error playing video stream:", error);
+        });
       }
     });
 
@@ -188,20 +196,48 @@ export const SocketContextProvider = ({
       console.error("WebSocket is not open");
     }
   };
+  const toggleMute = () => {
+    if (stream) {
+      const audioTrack = stream.getAudioTracks()[0];
+      if (audioTrack) {
+        audioTrack.enabled = !audioTrack.enabled;
+        setIsMuted(!audioTrack.enabled);
+      }
+    }
+  };
 
+  const toggleVideo = () => {
+    if (stream) {
+      const videoTrack = stream.getVideoTracks()[0];
+      if (videoTrack) {
+        videoTrack.enabled = !videoTrack.enabled;
+        setIsVideoOff(!videoTrack.enabled);
+      }
+    }
+  };
   return (
     <SocketContext.Provider
       value={{
         stream,
-        myVideo,
-        userVideo,
+        localVideo,
+        remoteVideo,
         answerCall,
         callUser,
         leaveCall,
         callAccepted,
         callEnded,
         call,
+        name,
+        setName,
         myUserId,
+        isVideoOff,
+        setIsVideoOff,
+        isMuted,
+        setIsMuted,
+        isVolume,
+        setIsVolume,
+        toggleVideo,
+        toggleMute,
       }}
     >
       {children}
