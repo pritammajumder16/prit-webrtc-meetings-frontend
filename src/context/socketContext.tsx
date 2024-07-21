@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { createContext, useState, useRef, useEffect, ReactNode } from "react";
 import Peer from "simple-peer";
 import { SocketContextType } from "../types/interface";
@@ -109,21 +108,39 @@ export const SocketContextProvider = ({
   };
 
   const callUser = (id: string) => {
+    console.log("Calling user:", id);
+
+    if (!stream) {
+      console.error("No media stream available.");
+      return;
+    }
+
     const peer = new Peer({ initiator: true, trickle: false, stream });
+
     peer.on("signal", (signal) => {
-      socket.current?.send(
-        JSON.stringify({
-          eventType: "call",
-          targetId: id,
-          signalData: signal,
-        })
-      );
+      console.log("Sending signal:", signal);
+      if (socket.current) {
+        socket.current.send(
+          JSON.stringify({
+            eventType: "call",
+            targetId: id,
+            signalData: signal,
+          })
+        );
+      } else {
+        console.error("WebSocket connection is not available.");
+      }
     });
 
     peer.on("stream", (currentStream) => {
+      console.log("Received remote stream.");
       if (userVideo.current) {
         userVideo.current.srcObject = currentStream;
       }
+    });
+
+    peer.on("error", (error) => {
+      console.error("Peer error:", error);
     });
 
     connectionRef.current = peer;

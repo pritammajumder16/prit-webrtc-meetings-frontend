@@ -1,7 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
@@ -9,5 +8,10 @@ export default defineConfig({
   },
   define: {
     global: "globalThis",
+  },
+  resolve: {
+    alias: {
+      "readable-stream": "vite-compatible-readable-stream",
+    },
   },
 });
