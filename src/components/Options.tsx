@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { useContext, useMemo, useState } from "react";
+import { useContext, useState } from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { SocketContext } from "../context/socketContext";
 import Input from "./ui/Input";
-import { generateUniqueId } from "../utils/generateUniqueId";
 import Button from "./ui/Button";
 import { AssignmentIcon, CallEndIcon, CallIcon } from "../assets/staticIcons";
 import { generateGuestName } from "../utils/generateGuestName";
@@ -11,9 +10,7 @@ const Options = ({ children }: { children: React.ReactNode }) => {
   const context = useContext(SocketContext);
   const [name, setName] = useState<string>(generateGuestName());
   const [idToCall, setIdToCall] = useState<string>("");
-  const uniqueId = useMemo(() => {
-    return generateUniqueId();
-  }, []);
+
   return (
     <div className="text-black mt-10 dark:text-white ">
       <div className="flex gap-6 flex-col flex-wrap w-full md:flex-row">
@@ -32,9 +29,9 @@ const Options = ({ children }: { children: React.ReactNode }) => {
           />
 
           <div className="">
-            <span>Your ID is</span> <span>{uniqueId}</span>
+            <span>Your ID is</span> <span>{context?.myUserId}</span>
           </div>
-          <CopyToClipboard text={uniqueId}>
+          <CopyToClipboard text={context?.myUserId || ""}>
             <Button
               type="button"
               className="flex-1 flex items-center justify-center text-nowrap whitespace-nowrap"

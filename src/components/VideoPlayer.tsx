@@ -6,7 +6,7 @@ import { SocketContextType } from "../types/interface";
 const VideoPlayer = () => {
   const context = useContext<SocketContextType | undefined>(SocketContext);
   return (
-    <div className="text-black dark:text-white">
+    <div className="mt-10 text-black dark:text-white">
       {context?.stream && (
         <div>
           <video playsInline muted autoPlay ref={context?.myVideo} />

@@ -3,12 +3,11 @@
 import { createContext, useState, useRef, useEffect, ReactNode } from "react";
 import Peer from "simple-peer";
 import { SocketContextType } from "../types/interface";
+import { generateUniqueId } from "../utils/generateUniqueId";
 
 export const SocketContext = createContext<SocketContextType | undefined>(
   undefined
 );
-
-const socket = new WebSocket("ws://localhost:8080");
 
 export const SocketContextProvider = ({
   children,
@@ -24,7 +23,15 @@ export const SocketContextProvider = ({
   const [call, setCall] = useState<any>();
   const [myUserId, setMyUserId] = useState<string>("");
 
+  const socket = useRef<WebSocket | null>(null); // Use useRef to store the WebSocket instance
+  const uniqueId = useRef(generateUniqueId()).current; // Use a ref to keep the uniqueId constant
+
   useEffect(() => {
+    socket.current = new WebSocket(`ws://localhost:8080?userId=${uniqueId}`);
+
+    const socketInstance = socket.current;
+    setMyUserId(uniqueId);
+
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
       .then((currentStream) => {
@@ -34,27 +41,40 @@ export const SocketContextProvider = ({
         }
       });
 
-    socket.onmessage = (message) => {
-      const data = JSON.parse(message.data);
-      switch (data.eventType) {
-        case "connectionCallback":
-          setMyUserId(data.data);
-          break;
-        case "incoming_call":
-          handleIncomingCall(data);
-          break;
-        case "call_answer":
-          handleCallAccepted(data);
-          break;
-        default:
-          break;
-      }
+    socketInstance.onopen = () => {
+      console.log("WebSocket connected");
+      socketInstance.onmessage = (message) => {
+        const data = JSON.parse(message.data);
+        console.log("Message received:", data);
+        switch (data.eventType) {
+          case "connectionCallback":
+            break;
+          case "incoming_call":
+            handleIncomingCall(data);
+            break;
+          case "call_answer":
+            handleCallAccepted(data);
+            break;
+          default:
+            break;
+        }
+      };
+      socketInstance.onclose = () => {
+        console.log("WebSocket connection closed");
+      };
+
+      socketInstance.onerror = (error) => {
+        console.error("WebSocket error:", error);
+      };
     };
 
     return () => {
-      socket.close();
+      console.log("Cleaning up WebSocket");
+      if (socketInstance) {
+        socketInstance.close();
+      }
     };
-  }, []);
+  }, [uniqueId]);
 
   const handleIncomingCall = (data: any) => {
     setCall({
@@ -73,7 +93,7 @@ export const SocketContextProvider = ({
     setCallAccepted(true);
     const peer = new Peer({ initiator: false, trickle: false, stream });
     peer.on("signal", (signal) => {
-      socket.send(
+      socket.current?.send(
         JSON.stringify({
           eventType: "call_answer",
           signalData: signal,
@@ -91,7 +111,7 @@ export const SocketContextProvider = ({
   const callUser = (id: string) => {
     const peer = new Peer({ initiator: true, trickle: false, stream });
     peer.on("signal", (signal) => {
-      socket.send(
+      socket.current?.send(
         JSON.stringify({
           eventType: "call",
           targetId: id,
@@ -112,7 +132,7 @@ export const SocketContextProvider = ({
   const leaveCall = () => {
     setCallEnded(true);
     connectionRef.current?.destroy();
-    socket.send(JSON.stringify({ eventType: "end_call" }));
+    socket.current?.send(JSON.stringify({ eventType: "end_call" }));
   };
 
   return (
