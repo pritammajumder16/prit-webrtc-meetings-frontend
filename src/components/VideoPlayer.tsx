@@ -12,11 +12,9 @@ const VideoPlayer = () => {
           <video playsInline muted autoPlay ref={context?.myVideo} />
         </div>
       )}
-      {context?.callAccepted && !context?.callEnded && (
-        <div>
-          <video playsInline autoPlay ref={context?.userVideo} />
-        </div>
-      )}
+      <div>
+        <video playsInline autoPlay ref={context?.userVideo} />
+      </div>
     </div>
   );
 };

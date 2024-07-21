@@ -34,10 +34,14 @@ export const SocketContextProvider = ({
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
       .then((currentStream) => {
+        console.log("Media stream obtained:", currentStream);
         setStream(currentStream);
         if (myVideo.current) {
           myVideo.current.srcObject = currentStream;
         }
+      })
+      .catch((error) => {
+        console.error("Error getting media stream:", error);
       });
 
     socketInstance.onopen = () => {
@@ -76,6 +80,7 @@ export const SocketContextProvider = ({
   }, [uniqueId]);
 
   const handleIncomingCall = (data: any) => {
+    console.log("incoming call:", data);
     setCall({
       isReceivedCall: true,
       callerId: data.callerId,
@@ -84,26 +89,58 @@ export const SocketContextProvider = ({
   };
 
   const handleCallAccepted = (data: any) => {
+    console.log("Call accepted with signal data:", data.signalData);
     setCallAccepted(true);
     connectionRef.current?.signal(data.signalData);
   };
 
   const answerCall = () => {
-    setCallAccepted(true);
+    console.log(" Non initiator: Answering the call... ", call);
+
     const peer = new Peer({ initiator: false, trickle: false, stream });
+    peer.signal(call.signalData);
     peer.on("signal", (signal) => {
-      socket.current?.send(
-        JSON.stringify({
-          eventType: "call_answer",
-          signalData: signal,
-        })
-      );
-    });
-    peer.on("stream", (currentStream) => {
-      if (userVideo.current) {
-        userVideo.current.srcObject = currentStream;
+      setCallAccepted(true);
+      if (socket.current?.readyState === WebSocket.OPEN) {
+        socket.current.send(
+          JSON.stringify({
+            eventType: "answer_call",
+            signalData: signal,
+            callerId: call.callerId,
+          })
+        );
+      } else {
+        console.error("WebSocket is not open");
       }
     });
+
+    peer.on("stream", (currentStream) => {
+      console.log(
+        "Received remote stream -- Non initiator",
+        currentStream,
+        userVideo.current
+      );
+      if (userVideo.current) {
+        console.log("playing");
+        userVideo.current.srcObject = currentStream;
+        userVideo.current.play().catch((error) => {
+          console.error("Error playing video stream:", error);
+        });
+      }
+    });
+
+    peer.on("error", (error) => {
+      console.error("Peer error:", error);
+    });
+
+    peer.on("connect", () => {
+      console.log("Peer connection established");
+    });
+
+    peer.on("close", () => {
+      console.log("Peer connection closed");
+    });
+
     connectionRef.current = peer;
   };
 
@@ -118,22 +155,18 @@ export const SocketContextProvider = ({
     const peer = new Peer({ initiator: true, trickle: false, stream });
 
     peer.on("signal", (signal) => {
-      console.log("Sending signal:", signal);
-      if (socket.current) {
-        socket.current.send(
-          JSON.stringify({
-            eventType: "call",
-            targetId: id,
-            signalData: signal,
-          })
-        );
-      } else {
-        console.error("WebSocket connection is not available.");
-      }
+      socket?.current?.send(
+        JSON.stringify({
+          eventType: "call",
+          targetId: id,
+          callerId: myUserId,
+          signalData: signal,
+        })
+      );
     });
 
     peer.on("stream", (currentStream) => {
-      console.log("Received remote stream.");
+      console.log("Received remote stream -- initiator user");
       if (userVideo.current) {
         userVideo.current.srcObject = currentStream;
       }
@@ -149,7 +182,11 @@ export const SocketContextProvider = ({
   const leaveCall = () => {
     setCallEnded(true);
     connectionRef.current?.destroy();
-    socket.current?.send(JSON.stringify({ eventType: "end_call" }));
+    if (socket.current?.readyState === WebSocket.OPEN) {
+      socket.current.send(JSON.stringify({ eventType: "end_call" }));
+    } else {
+      console.error("WebSocket is not open");
+    }
   };
 
   return (

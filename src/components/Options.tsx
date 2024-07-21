@@ -4,7 +4,7 @@ import { CopyToClipboard } from "react-copy-to-clipboard";
 import { SocketContext } from "../context/socketContext";
 import Input from "./ui/Input";
 import Button from "./ui/Button";
-import { AssignmentIcon, CallEndIcon, CallIcon } from "../assets/staticIcons";
+import { AssignmentIcon, CallIcon } from "../assets/staticIcons";
 import { generateGuestName } from "../utils/generateGuestName";
 const Options = ({ children }: { children: React.ReactNode }) => {
   const context = useContext(SocketContext);
@@ -53,26 +53,17 @@ const Options = ({ children }: { children: React.ReactNode }) => {
             value={idToCall}
             onChange={(e) => setIdToCall(e.target.value)}
           />
-          {context?.callAccepted && !context.callEnded ? (
-            <Button
-              type="button"
-              onClick={context.leaveCall}
-              className="flex-1 flex items-center justify-center"
-            >
-              <img src={CallEndIcon} /> Hang up
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              onClick={() => {
-                context?.callUser(idToCall);
-              }}
-              disabled={!name || !idToCall}
-              className="flex-1 flex items-center justify-center"
-            >
-              <img src={CallIcon} /> Call
-            </Button>
-          )}
+
+          <Button
+            type="button"
+            onClick={() => {
+              context?.callUser(idToCall);
+            }}
+            disabled={!name || !idToCall}
+            className="flex h-fit items-center justify-center"
+          >
+            <img src={CallIcon} /> Call
+          </Button>
         </form>
       </div>
       {children}
