@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface ContextType {
   stream?: MediaStream;
   myVideo: React.RefObject<HTMLVideoElement>;
@@ -7,4 +8,6 @@ export interface ContextType {
   callAccepted: boolean;
   userVideo: React.RefObject<HTMLVideoElement>;
   callEnded: boolean;
+  call: any;
+  myUserId: string;
 }

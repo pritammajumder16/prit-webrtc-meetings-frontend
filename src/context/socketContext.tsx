@@ -19,16 +19,19 @@ export const SocketContextProvider = ({
   const connectionRef = useRef<Peer.Instance>();
   const [callAccepted, setCallAccepted] = useState(false);
   const [callEnded, setCallEnded] = useState(false);
-  const [, setCall] = useState<any>();
-  const [, setMyUserId] = useState<string>("");
+  const [call, setCall] = useState<any>();
+  const [myUserId, setMyUserId] = useState<string>("");
+
   useEffect(() => {
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
       .then((currentStream) => {
         setStream(currentStream);
-        if (myVideo && myVideo.current)
+        if (myVideo.current) {
           myVideo.current.srcObject = currentStream;
+        }
       });
+
     socket.onmessage = (message) => {
       const data = JSON.parse(message.data);
       switch (data.eventType) {
@@ -50,8 +53,8 @@ export const SocketContextProvider = ({
       socket.close();
     };
   }, []);
+
   const handleIncomingCall = (data: any) => {
-    setCallAccepted(false);
     setCall({
       isReceivedCall: true,
       callerId: data.callerId,
@@ -70,14 +73,15 @@ export const SocketContextProvider = ({
     peer.on("signal", (signal) => {
       socket.send(
         JSON.stringify({
-          type: "answer_call",
+          eventType: "call_answer",
           signalData: signal,
         })
       );
     });
     peer.on("stream", (currentStream) => {
-      if (userVideo && userVideo.current)
+      if (userVideo.current) {
         userVideo.current.srcObject = currentStream;
+      }
     });
     connectionRef.current = peer;
   };
@@ -87,7 +91,7 @@ export const SocketContextProvider = ({
     peer.on("signal", (signal) => {
       socket.send(
         JSON.stringify({
-          type: "call",
+          eventType: "call",
           targetId: id,
           signalData: signal,
         })
@@ -106,8 +110,9 @@ export const SocketContextProvider = ({
   const leaveCall = () => {
     setCallEnded(true);
     connectionRef.current?.destroy();
-    socket.send(JSON.stringify({ type: "end_call" }));
+    socket.send(JSON.stringify({ eventType: "end_call" }));
   };
+
   return (
     <SocketContext.Provider
       value={{
@@ -119,6 +124,8 @@ export const SocketContextProvider = ({
         leaveCall,
         callAccepted,
         callEnded,
+        call,
+        myUserId,
       }}
     >
       {children}
