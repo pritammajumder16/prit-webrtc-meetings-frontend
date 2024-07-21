@@ -6,8 +6,10 @@ import Input from "./ui/Input";
 import { generateUniqueId } from "../utils/generateUniqueId";
 import Button from "./ui/Button";
 import { AssignmentIcon, CallEndIcon, CallIcon } from "../assets/staticIcons";
+import { generateGuestName } from "../utils/generateGuestName";
 const Options = ({ children }: { children: React.ReactNode }) => {
   const context = useContext(SocketContext);
+  const [name, setName] = useState<string>(generateGuestName());
   const [idToCall, setIdToCall] = useState<string>("");
   const uniqueId = useMemo(() => {
     return generateUniqueId();
@@ -20,10 +22,14 @@ const Options = ({ children }: { children: React.ReactNode }) => {
           autoComplete="off"
           className="flex-1 flex flex-col gap-4"
         >
-          <div className="">
+          <div className="font-semibold text-xl">
             <span>Account Info</span>
           </div>
-          <Input label={"Enter your name"} />
+          <Input
+            label={"Enter your name"}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
 
           <div className="">
             <span>Your ID is</span> <span>{uniqueId}</span>
@@ -42,10 +48,14 @@ const Options = ({ children }: { children: React.ReactNode }) => {
           autoComplete="off"
           className="flex-1 flex flex-col gap-4"
         >
-          <div className="">
+          <div className="font-semibold text-xl">
             <span>Make a call</span>
           </div>
-          <Input label={"Enter their ID"} />
+          <Input
+            label={"Enter their ID"}
+            value={idToCall}
+            onChange={(e) => setIdToCall(e.target.value)}
+          />
           {context?.callAccepted && !context.callEnded ? (
             <Button
               type="button"
@@ -58,8 +68,9 @@ const Options = ({ children }: { children: React.ReactNode }) => {
             <Button
               type="button"
               onClick={() => {
-                context?.callUser("");
+                context?.callUser(idToCall);
               }}
+              disabled={!name || !idToCall}
               className="flex-1 flex items-center justify-center"
             >
               <img src={CallIcon} /> Call
@@ -67,6 +78,7 @@ const Options = ({ children }: { children: React.ReactNode }) => {
           )}
         </form>
       </div>
+      {children}
     </div>
   );
 };
