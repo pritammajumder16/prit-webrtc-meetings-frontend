@@ -4,6 +4,7 @@ import Peer from "simple-peer";
 import { SocketContextType } from "../types/interface";
 import { generateUniqueId } from "../utils/generateUniqueId";
 import { generateGuestName } from "../utils/generateGuestName";
+import { credentials } from "../constants";
 
 export const SocketContext = createContext<SocketContextType | undefined>(
   undefined
@@ -29,11 +30,12 @@ export const SocketContextProvider = ({
   const [isVolume, setIsVolume] = useState<boolean>(false);
   const [isVideoOff, setIsVideoOff] = useState<boolean>(false);
   const localPeer = useRef<Peer.Instance>();
-
   const [isShareScreen, setIsShareScreen] = useState<boolean>(false);
   const recipentPeer = useRef<Peer.Instance>();
   useEffect(() => {
-    socket.current = new WebSocket(`ws://localhost:8080?userId=${uniqueId}`);
+    socket.current = new WebSocket(
+      `${credentials.socketBaseUrl}?userId=${uniqueId}`
+    );
 
     const socketInstance = socket.current;
     setMyUserId(uniqueId);
