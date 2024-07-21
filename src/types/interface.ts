@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export interface ContextType {
+export interface SocketContextType {
   stream?: MediaStream;
   myVideo: React.RefObject<HTMLVideoElement>;
   answerCall: () => void;

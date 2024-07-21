@@ -2,9 +2,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { createContext, useState, useRef, useEffect, ReactNode } from "react";
 import Peer from "simple-peer";
-import { ContextType } from "../types/interface";
+import { SocketContextType } from "../types/interface";
 
-const SocketContext = createContext<ContextType | undefined>(undefined);
+export const SocketContext = createContext<SocketContextType | undefined>(
+  undefined
+);
 
 const socket = new WebSocket("ws://localhost:8080");
 
