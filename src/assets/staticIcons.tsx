@@ -8,3 +8,5 @@ export const Mic = "/icons/mic.svg";
 export const MicOff = "/icons/mic_off.svg";
 export const Volume = "/icons/volume.svg";
 export const VolumeOff = "/icons/volume_off.svg";
+export const ShareScreen = "/icons/sharescreen.svg";
+export const StopShareScreen = "/icons/stop_sharescreen.svg";

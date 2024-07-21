@@ -13,11 +13,11 @@ export interface SocketContextType {
   name: string;
   myUserId: string;
   isVideoOff: boolean;
-  setIsVideoOff: React.Dispatch<React.SetStateAction<boolean>>;
   isMuted: boolean;
-  setIsMuted: React.Dispatch<React.SetStateAction<boolean>>;
   isVolume: boolean;
   setIsVolume: React.Dispatch<React.SetStateAction<boolean>>;
   toggleMute: () => void;
   toggleVideo: () => void;
+  toggleScreenShare: () => void;
+  isShareScreen: boolean;
 }

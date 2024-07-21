@@ -28,6 +28,10 @@ export const SocketContextProvider = ({
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [isVolume, setIsVolume] = useState<boolean>(false);
   const [isVideoOff, setIsVideoOff] = useState<boolean>(false);
+  const localPeer = useRef<Peer.Instance>();
+
+  const [isShareScreen, setIsShareScreen] = useState<boolean>(false);
+  const recipentPeer = useRef<Peer.Instance>();
   useEffect(() => {
     socket.current = new WebSocket(`ws://localhost:8080?userId=${uniqueId}`);
 
@@ -104,7 +108,16 @@ export const SocketContextProvider = ({
   const answerCall = () => {
     console.log(" Non initiator: Answering the call... ", call);
 
-    const peer = new Peer({ initiator: false, trickle: false, stream });
+    const peer = new Peer({
+      initiator: false,
+      trickle: false,
+      stream,
+      config: {
+        iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+      },
+    });
+    recipentPeer.current = peer;
+
     peer.signal(call.signalData);
     peer.on("signal", (signal) => {
       setCallAccepted(true);
@@ -156,8 +169,15 @@ export const SocketContextProvider = ({
   const callUser = (id: string) => {
     console.log("Calling user:", id);
 
-    const peer = new Peer({ initiator: true, trickle: false, stream });
-
+    const peer = new Peer({
+      initiator: true,
+      trickle: false,
+      stream,
+      config: {
+        iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+      },
+    });
+    localPeer.current = peer;
     peer.on("signal", (signal) => {
       socket?.current?.send(
         JSON.stringify({
@@ -215,6 +235,50 @@ export const SocketContextProvider = ({
       }
     }
   };
+
+  const startScreenShare = async () => {
+    try {
+      const screenStream = await (
+        navigator.mediaDevices as any
+      ).getDisplayMedia({
+        video: true,
+      });
+      const screenTrack = screenStream.getVideoTracks()[0];
+
+      localPeer?.current?.replaceTrack(
+        localPeer?.current?.streams[0].getVideoTracks()[0],
+        screenTrack,
+        localPeer?.current?.streams[0]
+      );
+      setIsShareScreen(true);
+
+      screenTrack.onended = () => {
+        stopScreenShare();
+      };
+    } catch (error) {
+      console.error("Error starting screen share:", error);
+    }
+  };
+
+  const stopScreenShare = () => {
+    if (stream) {
+      const videoTrack = stream.getVideoTracks()[0];
+      localPeer?.current?.replaceTrack(
+        localPeer?.current?.streams[0].getVideoTracks()[0],
+        videoTrack,
+        localPeer?.current?.streams[0]
+      );
+      setIsShareScreen(false);
+    }
+  };
+  const toggleScreenShare = () => {
+    console.log(isShareScreen);
+    if (isShareScreen) {
+      stopScreenShare();
+    } else {
+      startScreenShare();
+    }
+  };
   return (
     <SocketContext.Provider
       value={{
@@ -231,13 +295,13 @@ export const SocketContextProvider = ({
         setName,
         myUserId,
         isVideoOff,
-        setIsVideoOff,
         isMuted,
-        setIsMuted,
         isVolume,
         setIsVolume,
         toggleVideo,
         toggleMute,
+        toggleScreenShare,
+        isShareScreen,
       }}
     >
       {children}

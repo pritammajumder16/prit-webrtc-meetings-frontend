@@ -26,7 +26,12 @@ const VideoPlayer = () => {
           <span className="font-semibold text-xl">
             {socketContext.call?.callerName}
           </span>
-          <video playsInline autoPlay ref={socketContext?.remoteVideo} />
+          <video
+            playsInline
+            muted={socketContext.isVolume}
+            autoPlay
+            ref={socketContext?.remoteVideo}
+          />
         </div>
       )}
     </div>

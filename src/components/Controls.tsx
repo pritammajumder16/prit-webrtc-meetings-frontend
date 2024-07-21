@@ -7,6 +7,8 @@ import {
   CameraOff,
   Mic,
   MicOff,
+  ShareScreen,
+  StopShareScreen,
   Volume,
   VolumeOff,
 } from "../assets/staticIcons";
@@ -38,7 +40,19 @@ const Controls = () => {
       >
         <img src={socketContext?.isVolume == false ? Volume : VolumeOff} />
       </Button>
-
+      <Button
+        type="button"
+        onClick={() => socketContext?.toggleScreenShare()}
+        className="flex items-center justify-center"
+      >
+        <img
+          src={
+            socketContext?.isShareScreen == false
+              ? ShareScreen
+              : StopShareScreen
+          }
+        />
+      </Button>
       <Button
         type="button"
         onClick={socketContext?.leaveCall}
