@@ -17,6 +17,7 @@ export interface SocketContextType {
   isVolume: boolean;
   setIsVolume: React.Dispatch<React.SetStateAction<boolean>>;
   toggleMute: () => void;
+  roomId: string;
   toggleVideo: () => void;
   toggleScreenShare: () => void;
   isShareScreen: boolean;

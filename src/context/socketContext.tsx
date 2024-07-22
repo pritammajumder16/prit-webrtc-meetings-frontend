@@ -32,6 +32,7 @@ export const SocketContextProvider = ({
   const localPeer = useRef<Peer.Instance>();
   const [isShareScreen, setIsShareScreen] = useState<boolean>(false);
   const recipentPeer = useRef<Peer.Instance>();
+  const [roomId, setRoomId] = useState<string>("");
   useEffect(() => {
     socket.current = new WebSocket(
       `${credentials.socketBaseUrl}?userId=${uniqueId}`
@@ -66,6 +67,9 @@ export const SocketContextProvider = ({
           case "call_answer":
             handleCallAccepted(data);
             break;
+          case "joinRoomCallback":
+            setRoomId(data.roomId);
+            break;
           default:
             break;
         }
@@ -87,6 +91,7 @@ export const SocketContextProvider = ({
     };
   }, [uniqueId]);
 
+  //incoming_call - Recieving call
   const handleIncomingCall = (data: any) => {
     setCall({
       isReceivedCall: true,
@@ -97,6 +102,10 @@ export const SocketContextProvider = ({
   };
 
   const handleCallAccepted = (data: any) => {
+    socket?.current?.send(
+      JSON.stringify({ eventType: "join_room", roomId: data.callerId })
+    );
+    console.log("call accepted", data);
     setCallAccepted(true);
     setCall({
       isReceivedCall: false,
@@ -109,7 +118,9 @@ export const SocketContextProvider = ({
 
   const answerCall = () => {
     console.log(" Non initiator: Answering the call... ", call);
-
+    socket?.current?.send(
+      JSON.stringify({ eventType: "join_room", roomId: myUserId })
+    );
     const peer = new Peer({
       initiator: false,
       trickle: false,
@@ -129,7 +140,7 @@ export const SocketContextProvider = ({
             eventType: "answer_call",
             signalData: signal,
             callerId: call.callerId,
-            myuserId: myUserId,
+            myUserId: myUserId,
             myName: name,
           })
         );
@@ -168,6 +179,7 @@ export const SocketContextProvider = ({
     connectionRef.current = peer;
   };
 
+  //call
   const callUser = (id: string) => {
     console.log("Calling user:", id);
 
@@ -297,6 +309,7 @@ export const SocketContextProvider = ({
         setName,
         myUserId,
         isVideoOff,
+        roomId,
         isMuted,
         isVolume,
         setIsVolume,
