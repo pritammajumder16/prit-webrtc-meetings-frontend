@@ -21,4 +21,11 @@ export interface SocketContextType {
   toggleVideo: () => void;
   toggleScreenShare: () => void;
   isShareScreen: boolean;
+  messages: Message[];
+  sendMessage: (message: string) => void;
+}
+export interface Message {
+  message: string;
+  from: string;
+  time: string;
 }

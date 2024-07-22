@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createContext, useState, useRef, useEffect, ReactNode } from "react";
 import Peer from "simple-peer";
-import { SocketContextType } from "../types/interface";
+import { Message, SocketContextType } from "../types/interface";
 import { generateUniqueId } from "../utils/generateUniqueId";
 import { generateGuestName } from "../utils/generateGuestName";
 import { credentials } from "../constants";
@@ -33,6 +33,7 @@ export const SocketContextProvider = ({
   const [isShareScreen, setIsShareScreen] = useState<boolean>(false);
   const recipentPeer = useRef<Peer.Instance>();
   const [roomId, setRoomId] = useState<string>("");
+  const [messages, setMessages] = useState<Message[]>([]);
   useEffect(() => {
     socket.current = new WebSocket(
       `${credentials.socketBaseUrl}?userId=${uniqueId}`
@@ -68,7 +69,13 @@ export const SocketContextProvider = ({
             handleCallAccepted(data);
             break;
           case "joinRoomCallback":
-            setRoomId(data.roomId);
+            setRoomId(data.data.roomId);
+            break;
+          case "incoming_message":
+            setMessages((s) => [
+              { message: data.message, from: data.from, time: data.time },
+              ...s,
+            ]);
             break;
           default:
             break;
@@ -293,6 +300,19 @@ export const SocketContextProvider = ({
       startScreenShare();
     }
   };
+  const sendMessage = (message: string) => {
+    console.log(roomId);
+    if (roomId)
+      socket?.current?.send(
+        JSON.stringify({
+          eventType: "send_message",
+          roomId: roomId,
+          message,
+          time: new Date(),
+          from: name,
+        })
+      );
+  };
   return (
     <SocketContext.Provider
       value={{
@@ -306,6 +326,8 @@ export const SocketContextProvider = ({
         callEnded,
         call,
         name,
+        sendMessage,
+        messages,
         setName,
         myUserId,
         isVideoOff,

@@ -10,3 +10,4 @@ export const Volume = "/icons/volume.svg";
 export const VolumeOff = "/icons/volume_off.svg";
 export const ShareScreen = "/icons/sharescreen.svg";
 export const StopShareScreen = "/icons/stop_sharescreen.svg";
+export const ChatIcon = "/icons/chat.svg";

@@ -1,7 +1,9 @@
 import { InputHTMLAttributes } from "react";
+import { twMerge } from "tailwind-merge";
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
+  containerClassName?: string;
 }
 
 const Input = ({
@@ -10,10 +12,11 @@ const Input = ({
   value,
   onChange,
   type = "text",
+  containerClassName = "",
   ...rest
 }: InputProps) => {
   return (
-    <div className="mb-4">
+    <div className={(twMerge("mb-4"), containerClassName)}>
       <label className="block text-gray-700 dark:text-gray-200 text-sm font-bold mb-2">
         {label}
       </label>
