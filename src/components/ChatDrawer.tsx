@@ -1,9 +1,9 @@
 // components/ChatDrawer.tsx
 import { useState, useContext, useEffect, useRef } from "react";
-import { SocketContext } from "../context/socketContext";
+import { SocketContext } from "../context/SocketContext";
 import Input from "./ui/Input";
 import Button from "./ui/Button";
-import { ChatIcon } from "../assets/staticIcons"; // Assume you have an icon
+import ChatIcon from "../assets/svgComponents/ChatIcon";
 
 const ChatDrawer = () => {
   const socketContext = useContext(SocketContext);
@@ -26,9 +26,9 @@ const ChatDrawer = () => {
     <>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-16 right-5 z-50 p-3 bg-blue-600 text-white rounded-full shadow-lg"
+        className="fixed bottom-16 right-5 z-50 p-3 bg-[#e8eaed] text-white rounded-full shadow-lg dark:bg-gray-700"
       >
-        <img src={ChatIcon} alt="Chat Icon" />
+        <ChatIcon />
       </button>
       <div
         className={`fixed top-0 right-0 h-full w-80 bg-white dark:bg-gray-900 p-4 shadow-md transform transition-transform ${

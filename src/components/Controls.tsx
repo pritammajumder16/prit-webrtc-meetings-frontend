@@ -1,17 +1,15 @@
 import { useContext } from "react";
 import Button from "./ui/Button";
-import { SocketContext } from "../context/socketContext";
-import {
-  CallEndIcon,
-  Camera,
-  CameraOff,
-  Mic,
-  MicOff,
-  ShareScreen,
-  StopShareScreen,
-  Volume,
-  VolumeOff,
-} from "../assets/staticIcons";
+import { SocketContext } from "../context/SocketContext";
+import ScreenShare from "../assets/svgComponents/ScreenShare";
+import StopScreenShare from "../assets/svgComponents/StopScreenshare";
+import CallEnd from "../assets/svgComponents/CallEnd";
+import Volume from "../assets/svgComponents/Volume";
+import VolumeOff from "../assets/svgComponents/VolumeOff";
+import CameraOff from "../assets/svgComponents/CameraOff";
+import Camera from "../assets/svgComponents/Camera";
+import MicOff from "../assets/svgComponents/MicOff";
+import Mic from "../assets/svgComponents/Mic";
 
 const Controls = () => {
   const socketContext = useContext(SocketContext);
@@ -22,7 +20,7 @@ const Controls = () => {
         onClick={() => socketContext?.toggleMute()}
         className="flex items-center justify-center "
       >
-        <img src={socketContext?.isMuted == false ? Mic : MicOff} />
+        {socketContext?.isMuted == false ? <Mic /> : <MicOff />}
       </Button>
 
       <Button
@@ -30,7 +28,7 @@ const Controls = () => {
         onClick={() => socketContext?.toggleVideo()}
         className="flex items-center justify-center"
       >
-        <img src={socketContext?.isVideoOff == false ? Camera : CameraOff} />
+        {socketContext?.isVideoOff == false ? <Camera /> : <CameraOff />}
       </Button>
 
       <Button
@@ -38,27 +36,25 @@ const Controls = () => {
         onClick={() => socketContext?.setIsVolume(!socketContext.isVolume)}
         className="flex items-center justify-center"
       >
-        <img src={socketContext?.isVolume == false ? Volume : VolumeOff} />
+        {socketContext?.isVolume == false ? <Volume /> : <VolumeOff />}
       </Button>
       <Button
         type="button"
         onClick={() => socketContext?.toggleScreenShare()}
         className="flex items-center justify-center"
       >
-        <img
-          src={
-            socketContext?.isShareScreen == false
-              ? ShareScreen
-              : StopShareScreen
-          }
-        />
+        {socketContext?.isShareScreen == false ? (
+          <ScreenShare />
+        ) : (
+          <StopScreenShare />
+        )}
       </Button>
       <Button
         type="button"
         onClick={socketContext?.leaveCall}
         className="flex items-center justify-center  dark:!bg-red-500 !bg-red-500"
       >
-        <img src={CallEndIcon} />
+        <CallEnd />
       </Button>
     </section>
   );

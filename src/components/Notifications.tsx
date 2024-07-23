@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import Button from "./ui/Button";
-import { SocketContext } from "../context/socketContext";
-import { CallIcon } from "../assets/staticIcons";
+import { SocketContext } from "../context/SocketContext";
+import CallIcon from "../assets/svgComponents/Call";
 
 const Notifications = () => {
   const context = useContext(SocketContext);
@@ -15,7 +15,7 @@ const Notifications = () => {
             className="!bg-green-600"
             onClick={context.answerCall}
           >
-            <img src={CallIcon} alt="" />
+            <CallIcon />
           </Button>
         </div>
       )}

@@ -3,7 +3,7 @@ import Header from "../components/Header";
 import Notifications from "../components/Notifications";
 import Options from "../components/Options";
 import VideoPlayer from "../components/VideoPlayer";
-import { SocketContext } from "../context/socketContext";
+import { SocketContext } from "../context/SocketContext";
 import Controls from "../components/Controls";
 import ChatDrawer from "../components/ChatDrawer";
 
@@ -20,14 +20,14 @@ const Meet = () => {
           !socketContext?.callEnded ? (
             <Controls />
           ) : (
-            <Options>
-              <Notifications />
-            </Options>
+            <div className="w-full flex justify-center  ">
+              <Options>
+                <Notifications />
+              </Options>
+            </div>
           )}
         </div>
-        <div className="lg:w-1/3">
-          <ChatDrawer />
-        </div>
+        <ChatDrawer />
       </div>
     </section>
   );
