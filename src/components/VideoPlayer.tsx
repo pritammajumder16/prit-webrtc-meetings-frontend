@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { useContext, useRef } from "react";
-import { SocketContext } from "../context/SocketContext";
+import { useContext } from "react";
+import { SocketContext } from "../context/MSocketContext";
 import { SocketContextType } from "../types/interface";
 import InititalControls from "./InititalControls";
 
@@ -14,7 +14,7 @@ const VideoPlayer = () => {
         <span className="font-semibold text-xl">You</span>
 
         <video
-          className="h-96 w-96 shadow-lg rounded-lg"
+          className="size-full "
           playsInline
           muted
           hidden={!socketContext?.localVideo || socketContext.isVideoOff}
@@ -42,13 +42,13 @@ const VideoPlayer = () => {
             {socketContext.call?.callerName}
           </span>
           <video
-            className="h-96 w-96 shadow-lg rounded-lg"
+            className="size-full "
             playsInline
             muted={socketContext.isVolume}
             autoPlay
             ref={socketContext.remoteVideo}
           />
-          <div className="h-96 w-96 flex items-center justify-center border-4 border-green-500 shadow-lg rounded-lg bg-gray-800 text-white">
+          <div className="size-full flex items-center justify-center border-4 border-green-500 shadow-lg rounded-lg bg-gray-800 text-white">
             {(!socketContext?.localVideo || socketContext.isVideoOff) && (
               <div className="h-96 w-96 flex items-center justify-center ">
                 <div className="shadow-lg rounded-full flex items-center justify-center size-44 text-4xl font-semibold bg-gray-800 ">

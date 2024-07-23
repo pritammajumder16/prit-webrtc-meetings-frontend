@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import Button from "./ui/Button";
-import { SocketContext } from "../context/SocketContext";
+import { SocketContext } from "../context/MSocketContext";
 import ScreenShare from "../assets/svgComponents/ScreenShare";
 import StopScreenShare from "../assets/svgComponents/StopScreenshare";
 import CallEnd from "../assets/svgComponents/CallEnd";
@@ -10,9 +10,12 @@ import CameraOff from "../assets/svgComponents/CameraOff";
 import Camera from "../assets/svgComponents/Camera";
 import MicOff from "../assets/svgComponents/MicOff";
 import Mic from "../assets/svgComponents/Mic";
+import { SocketContextType } from "../types/interface";
 
 const Controls = () => {
-  const socketContext = useContext(SocketContext);
+  const socketContext = useContext<SocketContextType | undefined>(
+    SocketContext
+  );
   return (
     <section className="flex gap-2 w-full items-center justify-center mt-5">
       <Button

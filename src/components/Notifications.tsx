@@ -1,10 +1,11 @@
 import { useContext } from "react";
 import Button from "./ui/Button";
-import { SocketContext } from "../context/SocketContext";
+import { SocketContext } from "../context/MSocketContext";
 import CallIcon from "../assets/svgComponents/Call";
+import { SocketContextType } from "../types/interface";
 
 const Notifications = () => {
-  const context = useContext(SocketContext);
+  const context = useContext<SocketContextType | undefined>(SocketContext);
   return (
     <div className="text-black dark:text-white mt-5">
       {context?.call?.isReceivedCall && !context.callAccepted && (

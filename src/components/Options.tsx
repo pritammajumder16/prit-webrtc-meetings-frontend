@@ -1,13 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useContext, useState } from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
-import { SocketContext } from "../context/SocketContext";
+import { SocketContext } from "../context/MSocketContext";
 import Input from "./ui/Input";
 import Button from "./ui/Button";
 import Assignment from "../assets/svgComponents/Assignment";
 import CallIcon from "../assets/svgComponents/Call";
+import { SocketContextType } from "../types/interface";
 const Options = ({ children }: { children: React.ReactNode }) => {
-  const socketContext = useContext(SocketContext);
+  const socketContext = useContext<SocketContextType | undefined>(
+    SocketContext
+  );
   const [idToCall, setIdToCall] = useState<string>("");
 
   return (

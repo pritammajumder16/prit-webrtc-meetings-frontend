@@ -3,7 +3,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
-import { SocketContextProvider } from "./context/SocketContext.tsx";
+import { SocketContextProvider } from "./context/MSocketContext.tsx";
 import * as process from "process";
 import { ThemeContextProvider } from "./context/ThemeContext.tsx";
 

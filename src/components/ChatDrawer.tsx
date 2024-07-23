@@ -1,12 +1,15 @@
 // components/ChatDrawer.tsx
 import { useState, useContext, useEffect, useRef } from "react";
-import { SocketContext } from "../context/SocketContext";
+import { SocketContext } from "../context/MSocketContext";
 import Input from "./ui/Input";
 import Button from "./ui/Button";
 import ChatIcon from "../assets/svgComponents/ChatIcon";
+import { Message, SocketContextType } from "../types/interface";
 
 const ChatDrawer = () => {
-  const socketContext = useContext(SocketContext);
+  const socketContext = useContext<SocketContextType | undefined>(
+    SocketContext
+  );
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState<string>("");
 
@@ -37,7 +40,7 @@ const ChatDrawer = () => {
       >
         <div className="flex flex-col h-full">
           <div className="flex-1 overflow-y-auto mb-4 flex flex-col-reverse">
-            {socketContext?.messages?.map((msg, index) => (
+            {socketContext?.messages?.map((msg: Message, index: number) => (
               <div
                 key={index}
                 className={`mb-2 p-3 rounded-lg shadow-md ${
