@@ -18,9 +18,8 @@ export const SocketContextProvider = ({
   const [stream, setStream] = useState<MediaStream>();
   const localVideo = useRef<HTMLVideoElement>(null);
   const remoteVideo = useRef<HTMLVideoElement>(null);
-  const connectionRef = useRef<Peer.Instance>();
   const [callAccepted, setCallAccepted] = useState(false);
-  const [callEnded, setCallEnded] = useState(false);
+  const [callEnded, setCallEnded] = useState(true);
   const [call, setCall] = useState<ICall>();
   const [myUserId, setMyUserId] = useState<string>("");
   const [name, setName] = useState<string>(generateGuestName());
@@ -31,7 +30,7 @@ export const SocketContextProvider = ({
   const [isVideoOff, setIsVideoOff] = useState<boolean>(false);
   const localPeer = useRef<Peer.Instance>();
   const [isShareScreen, setIsShareScreen] = useState<boolean>(false);
-  const recipentPeer = useRef<Peer.Instance>();
+  const remotePeer = useRef<Peer.Instance>();
   const [roomId, setRoomId] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
   const getNavigatorMediaStream = ({
@@ -45,7 +44,6 @@ export const SocketContextProvider = ({
       navigator.mediaDevices
         .getUserMedia({ video, audio })
         .then((currentStream) => {
-          console.log(currentStream);
           setStream(currentStream);
           if (localVideo.current) {
             localVideo.current.srcObject = currentStream;
@@ -67,7 +65,6 @@ export const SocketContextProvider = ({
     socketInstance.onopen = () => {
       socketInstance.onmessage = (message) => {
         const data = JSON.parse(message.data);
-        console.log("Message received:", data);
         switch (data.eventType) {
           case "connectionCallback":
             break;
@@ -106,8 +103,43 @@ export const SocketContextProvider = ({
       }
     };
   }, [uniqueId]);
+  //call
+  const callUser = (id: string) => {
+    const peer = new Peer({
+      initiator: true,
+      trickle: false,
+      stream,
+      config: {
+        iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+      },
+    });
+    peer.on("signal", (signal) => {
+      socket?.current?.send(
+        JSON.stringify({
+          eventType: "call",
+          targetId: id,
+          callerId: myUserId,
+          signalData: signal,
+          callerName: name,
+        })
+      );
+    });
 
-  //incoming_call - Recieving call
+    peer.on("stream", (currentStream) => {
+      if (remoteVideo.current) {
+        remoteVideo.current.srcObject = currentStream;
+        remoteVideo.current.play().catch((error) => {
+          console.error("Error playing video stream:", error);
+        });
+      }
+    });
+
+    peer.on("error", (error) => {
+      console.error("Peer error:", error);
+    });
+
+    localPeer.current = peer;
+  }; //incoming_call - Recieving call
   const handleIncomingCall = (data: any) => {
     setCall({
       isReceivedCall: true,
@@ -116,24 +148,8 @@ export const SocketContextProvider = ({
       callerName: data.callerName,
     });
   };
-
-  const handleCallAccepted = (data: any) => {
-    socket?.current?.send(
-      JSON.stringify({ eventType: "join_room", roomId: data.callerId })
-    );
-    console.log("call accepted", data);
-    setCallAccepted(true);
-    setCall({
-      isReceivedCall: false,
-      callerId: data.callerId,
-      signalData: data.signalData,
-      callerName: data.callerName,
-    });
-    connectionRef.current?.signal(data.signalData);
-  };
-
   const answerCall = () => {
-    console.log(" Non initiator: Answering the call... ", call);
+    setCallAccepted(true);
     socket?.current?.send(
       JSON.stringify({ eventType: "join_room", roomId: myUserId })
     );
@@ -145,11 +161,9 @@ export const SocketContextProvider = ({
         iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
       },
     });
-    recipentPeer.current = peer;
 
     peer.signal(call?.signalData);
     peer.on("signal", (signal) => {
-      setCallAccepted(true);
       if (socket.current?.readyState === WebSocket.OPEN) {
         socket.current.send(
           JSON.stringify({
@@ -166,13 +180,7 @@ export const SocketContextProvider = ({
     });
 
     peer.on("stream", (currentStream) => {
-      console.log(
-        "Received remote stream -- Non initiator",
-        currentStream,
-        remoteVideo.current
-      );
       if (remoteVideo.current) {
-        console.log("playing");
         remoteVideo.current.srcObject = currentStream;
         remoteVideo.current.play().catch((error) => {
           console.error("Error playing video stream:", error);
@@ -182,64 +190,40 @@ export const SocketContextProvider = ({
 
     peer.on("error", (error) => {
       console.error("Peer error:", error);
-    });
-
-    peer.on("connect", () => {
-      console.log("Peer connection established");
     });
 
     peer.on("close", () => {
       console.log("Peer connection closed");
     });
 
-    connectionRef.current = peer;
+    remotePeer.current = peer;
   };
 
-  //call
-  const callUser = (id: string) => {
-    console.log("Calling user:", id);
-
-    const peer = new Peer({
-      initiator: true,
-      trickle: false,
-      stream,
-      config: {
-        iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-      },
+  const handleCallAccepted = (data: any) => {
+    socket?.current?.send(
+      JSON.stringify({ eventType: "join_room", roomId: data.callerId })
+    );
+    setCallAccepted(true);
+    setCall({
+      isReceivedCall: false,
+      callerId: data.callerId,
+      signalData: data.signalData,
+      callerName: data.callerName,
     });
-    localPeer.current = peer;
-    peer.on("signal", (signal) => {
-      socket?.current?.send(
-        JSON.stringify({
-          eventType: "call",
-          targetId: id,
-          callerId: myUserId,
-          signalData: signal,
-          callerName: name,
-        })
-      );
-    });
-
-    peer.on("stream", (currentStream) => {
-      console.log("Received remote stream -- initiator user");
-      if (remoteVideo.current) {
-        remoteVideo.current.srcObject = currentStream;
-        remoteVideo.current.play().catch((error) => {
-          console.error("Error playing video stream:", error);
-        });
-      }
-    });
-
-    peer.on("error", (error) => {
-      console.error("Peer error:", error);
-    });
-
-    connectionRef.current = peer;
+    localPeer.current?.signal(data.signalData);
   };
 
   const leaveCall = () => {
     setCallEnded(true);
-    connectionRef.current?.destroy();
+    localPeer.current?.destroy();
+    setIsShareScreen(false);
+    remotePeer.current?.destroy();
+    setCall(undefined);
+    setCallAccepted(false);
+    localPeer.current = undefined;
+    remotePeer.current = undefined;
+    setIsMuted(false);
+    setIsVideoOff(false);
     if (socket.current?.readyState === WebSocket.OPEN) {
       socket.current.send(JSON.stringify({ eventType: "end_call" }));
     } else {
@@ -275,6 +259,7 @@ export const SocketContextProvider = ({
       });
       const screenTrack = screenStream.getVideoTracks()[0];
 
+      if (localVideo.current) localVideo.current.srcObject = screenStream;
       localPeer?.current?.replaceTrack(
         localPeer?.current?.streams[0].getVideoTracks()[0],
         screenTrack,
@@ -293,6 +278,7 @@ export const SocketContextProvider = ({
   const stopScreenShare = () => {
     if (stream) {
       const videoTrack = stream.getVideoTracks()[0];
+      if (localVideo.current) localVideo.current.srcObject = stream;
       localPeer?.current?.replaceTrack(
         localPeer?.current?.streams[0].getVideoTracks()[0],
         videoTrack,
@@ -302,7 +288,6 @@ export const SocketContextProvider = ({
     }
   };
   const toggleScreenShare = () => {
-    console.log(isShareScreen);
     if (isShareScreen) {
       stopScreenShare();
     } else {
@@ -310,7 +295,6 @@ export const SocketContextProvider = ({
     }
   };
   const sendMessage = (message: string) => {
-    console.log(roomId);
     if (roomId)
       socket?.current?.send(
         JSON.stringify({

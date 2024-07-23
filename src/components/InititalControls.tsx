@@ -2,7 +2,7 @@ import { useContext } from "react";
 import Camera from "../assets/svgComponents/Camera";
 import Mic from "../assets/svgComponents/Mic";
 import Button from "./ui/Button";
-import { SocketContext } from "../context/MSocketContext";
+import { SocketContext } from "../context/SocketContext";
 import MicOff from "../assets/svgComponents/MicOff";
 import CameraOff from "../assets/svgComponents/CameraOff";
 import { SocketContextType } from "../types/interface";

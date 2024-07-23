@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import Button from "./ui/Button";
-import { SocketContext } from "../context/MSocketContext";
+import { SocketContext } from "../context/SocketContext";
 import ScreenShare from "../assets/svgComponents/ScreenShare";
 import StopScreenShare from "../assets/svgComponents/StopScreenshare";
 import CallEnd from "../assets/svgComponents/CallEnd";

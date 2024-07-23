@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useContext } from "react";
-import { SocketContext } from "../context/MSocketContext";
+import { SocketContext } from "../context/SocketContext";
 import { SocketContextType } from "../types/interface";
 import InititalControls from "./InititalControls";
 
@@ -10,7 +10,7 @@ const VideoPlayer = () => {
   );
   return (
     <div className="mt-10 text-black dark:text-white gap-5 flex flex-wrap items-center justify-center">
-      <div className="flex flex-col items-center  gap-2 h-[420px] w-96 ">
+      <div className="flex flex-col items-center  gap-2 md:h-[420px] md:w-96 w-full h-fit ">
         <span className="font-semibold text-xl">You</span>
 
         <video
@@ -24,7 +24,7 @@ const VideoPlayer = () => {
         />
 
         {(!socketContext?.localVideo || socketContext.isVideoOff) && (
-          <div className="h-96 w-96 flex items-center justify-center ">
+          <div className="size-full flex items-center justify-center ">
             <div className="shadow-lg rounded-full flex items-center justify-center size-44 text-4xl font-semibold bg-gray-800 ">
               {socketContext?.name?.toUpperCase()[0]}
             </div>
@@ -36,8 +36,8 @@ const VideoPlayer = () => {
         )}
       </div>
 
-      {socketContext?.call && !socketContext?.callAccepted && (
-        <div className="flex flex-col items-center  gap-2 h-[420px] w-96 ">
+      {socketContext?.call && socketContext?.callAccepted && (
+        <div className="flex flex-col items-center  gap-2 md:h-[420px] md:w-96  w-full h-fit ">
           <span className="font-semibold text-xl">
             {socketContext.call?.callerName}
           </span>
@@ -48,15 +48,14 @@ const VideoPlayer = () => {
             autoPlay
             ref={socketContext.remoteVideo}
           />
-          <div className="size-full flex items-center justify-center border-4 border-green-500 shadow-lg rounded-lg bg-gray-800 text-white">
-            {(!socketContext?.localVideo || socketContext.isVideoOff) && (
-              <div className="h-96 w-96 flex items-center justify-center ">
-                <div className="shadow-lg rounded-full flex items-center justify-center size-44 text-4xl font-semibold bg-gray-800 ">
-                  {socketContext?.call?.callerName?.toUpperCase()[0] || "G"}
-                </div>
+
+          {(!socketContext?.remoteVideo || socketContext.isVideoOff) && (
+            <div className="size-full flex items-center justify-center ">
+              <div className="shadow-lg rounded-full flex items-center justify-center size-44 text-4xl font-semibold bg-gray-800 ">
+                {socketContext?.call?.callerName?.toUpperCase()[0] || "G"}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       )}
     </div>

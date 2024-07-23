@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import Button from "./ui/Button";
-import { SocketContext } from "../context/MSocketContext";
+import { SocketContext } from "../context/SocketContext";
 import CallIcon from "../assets/svgComponents/Call";
 import { SocketContextType } from "../types/interface";
 
