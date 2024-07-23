@@ -8,7 +8,7 @@ export interface SocketContextType {
   callAccepted: boolean;
   remoteVideo: React.RefObject<HTMLVideoElement>;
   callEnded: boolean;
-  call: any;
+  call: ICall | undefined;
   setName: React.Dispatch<React.SetStateAction<string>>;
   name: string;
   myUserId: string;
@@ -28,4 +28,10 @@ export interface Message {
   message: string;
   from: string;
   time: string;
+}
+export interface ICall {
+  isReceivedCall: boolean;
+  callerId: string;
+  signalData: any;
+  callerName: string;
 }

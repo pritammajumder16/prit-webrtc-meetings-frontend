@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createContext, useState, useRef, useEffect, ReactNode } from "react";
 import Peer from "simple-peer";
-import { Message, SocketContextType } from "../types/interface";
+import { ICall, Message, SocketContextType } from "../types/interface";
 import { generateUniqueId } from "../utils/generateUniqueId";
 import { generateGuestName } from "../utils/generateGuestName";
 import { credentials } from "../constants";
@@ -21,7 +21,7 @@ export const SocketContextProvider = ({
   const connectionRef = useRef<Peer.Instance>();
   const [callAccepted, setCallAccepted] = useState(false);
   const [callEnded, setCallEnded] = useState(false);
-  const [call, setCall] = useState<any>();
+  const [call, setCall] = useState<ICall>();
   const [myUserId, setMyUserId] = useState<string>("");
   const [name, setName] = useState<string>(generateGuestName());
   const socket = useRef<WebSocket | null>(null); // Use useRef to store the WebSocket instance
@@ -34,26 +34,35 @@ export const SocketContextProvider = ({
   const recipentPeer = useRef<Peer.Instance>();
   const [roomId, setRoomId] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
+  const getNavigatorMediaStream = ({
+    audio,
+    video,
+  }: {
+    audio: boolean;
+    video: boolean;
+  }) => {
+    if (audio || video) {
+      navigator.mediaDevices
+        .getUserMedia({ video, audio })
+        .then((currentStream) => {
+          console.log(currentStream);
+          setStream(currentStream);
+          if (localVideo.current) {
+            localVideo.current.srcObject = currentStream;
+          }
+        })
+        .catch((error) => {
+          console.error("Error getting media stream:", error);
+        });
+    }
+  };
   useEffect(() => {
     socket.current = new WebSocket(
       `${credentials.socketBaseUrl}?userId=${uniqueId}`
     );
-
+    getNavigatorMediaStream({ audio: !isMuted, video: !isVideoOff });
     const socketInstance = socket.current;
     setMyUserId(uniqueId);
-
-    navigator.mediaDevices
-      .getUserMedia({ video: true, audio: true })
-      .then((currentStream) => {
-        console.log("Media stream obtained:", currentStream);
-        setStream(currentStream);
-        if (localVideo.current) {
-          localVideo.current.srcObject = currentStream;
-        }
-      })
-      .catch((error) => {
-        console.error("Error getting media stream:", error);
-      });
 
     socketInstance.onopen = () => {
       socketInstance.onmessage = (message) => {
@@ -138,7 +147,7 @@ export const SocketContextProvider = ({
     });
     recipentPeer.current = peer;
 
-    peer.signal(call.signalData);
+    peer.signal(call?.signalData);
     peer.on("signal", (signal) => {
       setCallAccepted(true);
       if (socket.current?.readyState === WebSocket.OPEN) {
@@ -146,7 +155,7 @@ export const SocketContextProvider = ({
           JSON.stringify({
             eventType: "answer_call",
             signalData: signal,
-            callerId: call.callerId,
+            callerId: call?.callerId,
             myUserId: myUserId,
             myName: name,
           })

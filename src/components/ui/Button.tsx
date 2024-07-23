@@ -17,7 +17,7 @@ const Button = ({
 
   const variantStyles = {
     primary:
-      "flex items-center gap-2 dark:text-gray-200 bg-gray-200 dark:bg-gray-700 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-800",
+      "flex cursor-pointer disabled:cursor-not-allowed items-center gap-2 dark:text-gray-200 bg-gray-200 dark:bg-gray-700 dark:text-white disabled:bg-gray-100 disabled:hover:bg-gray-100  disabled:dark:hover:bg-gray-500 disabled:dark:bg-gray-500 hover:bg-gray-300 dark:hover:bg-gray-800",
     secondary:
       "bg-gray-500 dark:bg-gray-700 text-white hover:bg-gray-600 dark:hover:bg-gray-800 ",
   };
