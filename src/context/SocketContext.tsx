@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createContext, useState, useRef, useEffect, ReactNode } from "react";
 import Peer from "simple-peer";
@@ -5,6 +6,7 @@ import { ICall, Message, SocketContextType } from "../types/interface";
 import { generateUniqueId } from "../utils/generateUniqueId";
 import { generateGuestName } from "../utils/generateGuestName";
 import { credentials } from "../constants";
+import iceServers from "../constants/iceServers";
 
 export const SocketContext = createContext<SocketContextType | undefined>(
   undefined
@@ -33,6 +35,7 @@ export const SocketContextProvider = ({
   const remotePeer = useRef<Peer.Instance>();
   const [roomId, setRoomId] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
+
   const getNavigatorMediaStream = ({
     audio,
     video,
@@ -42,7 +45,18 @@ export const SocketContextProvider = ({
   }) => {
     if (audio || video) {
       navigator.mediaDevices
-        .getUserMedia({ video, audio })
+        .getUserMedia({
+          video: {
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            frameRate: { ideal: 30, max: 60 },
+          },
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          },
+        })
         .then((currentStream) => {
           setStream(currentStream);
           if (localVideo.current) {
@@ -54,6 +68,7 @@ export const SocketContextProvider = ({
         });
     }
   };
+
   useEffect(() => {
     socket.current = new WebSocket(
       `${credentials.socketBaseUrl}?userId=${uniqueId}`
@@ -102,14 +117,22 @@ export const SocketContextProvider = ({
       }
     };
   }, [uniqueId]);
-  //call
+
+  // callUser
   const callUser = (id: string) => {
     const peer = new Peer({
       initiator: true,
       trickle: false,
       stream,
       config: {
-        iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+        iceServers: [
+          { urls: "stun:stun.l.google.com:19302" },
+          {
+            urls: "turn:your.turn.server:3478",
+            username: "username",
+            credential: "password",
+          },
+        ],
       },
     });
     peer.on("signal", (signal) => {
@@ -138,7 +161,9 @@ export const SocketContextProvider = ({
     });
 
     localPeer.current = peer;
-  }; //incoming_call - Recieving call
+  };
+
+  // handleIncomingCall
   const handleIncomingCall = (data: any) => {
     setCall({
       isReceivedCall: true,
@@ -147,6 +172,8 @@ export const SocketContextProvider = ({
       callerName: data.callerName,
     });
   };
+
+  // answerCall
   const answerCall = () => {
     setCallAccepted(true);
     socket?.current?.send(
@@ -157,7 +184,7 @@ export const SocketContextProvider = ({
       trickle: false,
       stream,
       config: {
-        iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+        iceServers,
       },
     });
 
@@ -198,6 +225,7 @@ export const SocketContextProvider = ({
     remotePeer.current = peer;
   };
 
+  // handleCallAccepted
   const handleCallAccepted = (data: any) => {
     socket?.current?.send(
       JSON.stringify({ eventType: "join_room", roomId: data.callerId })
@@ -212,6 +240,7 @@ export const SocketContextProvider = ({
     localPeer.current?.signal(data.signalData);
   };
 
+  // leaveCall
   const leaveCall = () => {
     setCallEnded(true);
     localPeer.current?.destroy();
@@ -229,6 +258,8 @@ export const SocketContextProvider = ({
       console.error("WebSocket is not open");
     }
   };
+
+  // toggleMute
   const toggleMute = () => {
     if (stream) {
       const audioTrack = stream.getAudioTracks()[0];
@@ -239,6 +270,7 @@ export const SocketContextProvider = ({
     }
   };
 
+  // toggleVideo
   const toggleVideo = () => {
     if (stream) {
       const videoTrack = stream.getVideoTracks()[0];
@@ -249,12 +281,17 @@ export const SocketContextProvider = ({
     }
   };
 
+  // startScreenShare
   const startScreenShare = async () => {
     try {
       const screenStream = await (
         navigator.mediaDevices as any
       ).getDisplayMedia({
-        video: true,
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          frameRate: { ideal: 30, max: 60 },
+        },
       });
       const screenTrack = screenStream.getVideoTracks()[0];
 
@@ -274,6 +311,7 @@ export const SocketContextProvider = ({
     }
   };
 
+  // stopScreenShare
   const stopScreenShare = () => {
     if (stream) {
       const videoTrack = stream.getVideoTracks()[0];
@@ -286,6 +324,8 @@ export const SocketContextProvider = ({
       setIsShareScreen(false);
     }
   };
+
+  // toggleScreenShare
   const toggleScreenShare = () => {
     if (isShareScreen) {
       stopScreenShare();
@@ -293,6 +333,8 @@ export const SocketContextProvider = ({
       startScreenShare();
     }
   };
+
+  // sendMessage
   const sendMessage = (message: string) => {
     if (roomId)
       socket?.current?.send(
@@ -305,6 +347,7 @@ export const SocketContextProvider = ({
         })
       );
   };
+
   return (
     <SocketContext.Provider
       value={{

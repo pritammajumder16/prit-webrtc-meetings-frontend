@@ -18,7 +18,7 @@ Welcome to the WebRTC Video Chat Frontend! This project is a frontend applicatio
 
 - **Frontend**: React, TypeScript
 - **Backend**: Node.js, Express, WebSocket
-- **Real-Time Communication**: WebRTC, PeerJS
+- **Real-Time Communication**: WebRTC, Simple-Peer
 - **Styling**: Tailwind CSS
 - **Environment Management**: dotenv
 
