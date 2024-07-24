@@ -6,7 +6,7 @@ import { ICall, Message, SocketContextType } from "../types/interface";
 import { generateUniqueId } from "../utils/generateUniqueId";
 import { generateGuestName } from "../utils/generateGuestName";
 import { credentials } from "../constants";
-import iceServers from "../constants/iceServers";
+import { generateRequest } from "../utils/generateRequest";
 
 export const SocketContext = createContext<SocketContextType | undefined>(
   undefined
@@ -119,20 +119,16 @@ export const SocketContextProvider = ({
   }, [uniqueId]);
 
   // callUser
-  const callUser = (id: string) => {
+  const callUser = async (id: string) => {
+    const iceServersResponse = await generateRequest(`ice-servers`, {
+      method: "GET",
+    });
     const peer = new Peer({
       initiator: true,
       trickle: false,
       stream,
       config: {
-        iceServers: [
-          { urls: "stun:stun.l.google.com:19302" },
-          {
-            urls: "turn:your.turn.server:3478",
-            username: "username",
-            credential: "password",
-          },
-        ],
+        iceServers: iceServersResponse.iceServers,
       },
     });
     peer.on("signal", (signal) => {
@@ -174,17 +170,20 @@ export const SocketContextProvider = ({
   };
 
   // answerCall
-  const answerCall = () => {
+  const answerCall = async () => {
     setCallAccepted(true);
     socket?.current?.send(
       JSON.stringify({ eventType: "join_room", roomId: myUserId })
     );
+    const iceServersResponse = await generateRequest(`ice-servers`, {
+      method: "GET",
+    });
     const peer = new Peer({
       initiator: false,
       trickle: false,
       stream,
       config: {
-        iceServers,
+        iceServers: iceServersResponse.iceServers,
       },
     });
 
