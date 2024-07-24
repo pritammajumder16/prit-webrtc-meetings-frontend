@@ -14,15 +14,16 @@ const Options = ({ children }: { children: React.ReactNode }) => {
   const [idToCall, setIdToCall] = useState<string>("");
 
   return (
-    <div className="text-black mt-10 dark:text-white max-w-[600px]">
-      <div className="flex gap-6 flex-col flex-wrap w-full md:flex-row">
+    <div className="h-full text-black dark:text-white max-w-[600px] flex flex-col gap-5 justify-center">
+      {children}
+      <div className="flex gap-6 flex-wrap w-full md:flex-row h-fit ">
         <form
           noValidate
           autoComplete="off"
-          className="flex-1 flex flex-col gap-4"
+          className="flex-1 flex flex-col gap-4 min-w-52"
         >
           <div className="font-semibold text-xl">
-            <span>Account Info</span>
+            <span className="whitespace-nowrap">Account Info</span>
           </div>
           <Input
             label={"Enter your name"}
@@ -32,23 +33,23 @@ const Options = ({ children }: { children: React.ReactNode }) => {
           <CopyToClipboard text={socketContext?.myUserId || ""}>
             <Button
               type="button"
-              className="flex-1 flex items-center justify-center text-nowrap whitespace-nowrap"
+              className="flex whitespace-nowrap items-center justify-center text-nowrap "
             >
               <Assignment />
-              Copy your ID
+              Copy your Room ID
             </Button>
           </CopyToClipboard>
         </form>
         <form
           noValidate
           autoComplete="off"
-          className="flex-1 flex flex-col gap-4"
+          className="flex-1 flex flex-col gap-4 min-w-52"
         >
           <div className="font-semibold text-xl">
-            <span>Make a call</span>
+            <span className="whitespace-nowrap">Make a call</span>
           </div>
           <Input
-            label={"Enter their ID"}
+            label={"Enter Room ID"}
             value={idToCall}
             onChange={(e) => setIdToCall(e.target.value)}
           />
@@ -59,14 +60,13 @@ const Options = ({ children }: { children: React.ReactNode }) => {
               socketContext?.callUser(idToCall);
             }}
             disabled={!socketContext?.name || !idToCall}
-            className="flex h-fit items-center justify-center"
+            className="flex h-fit items-center justify-center whitespace-nowrap"
           >
             <CallIcon />
             Call
           </Button>
         </form>
       </div>
-      {children}
     </div>
   );
 };

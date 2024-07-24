@@ -34,8 +34,8 @@ const Header = () => {
   return (
     <section className="flex items-center w-full ">
       <div className="flex flex-1 justify-center items-center gap-2">
-        <img src={PritLogo} alt="Logo" className="size-10" />
-        <span className="font-semibold  text-2xl dark:text-white">
+        <img src={PritLogo} alt="Logo" className="size-8 md:size-10" />
+        <span className="font-semibold text-lg  md:text-2xl dark:text-white">
           Prit Meet
         </span>
       </div>

@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import Peer from "simple-peer";
 export interface SocketContextType {
   stream?: MediaStream;
   localVideo: React.RefObject<HTMLVideoElement>;
@@ -23,6 +24,8 @@ export interface SocketContextType {
   isShareScreen: boolean;
   messages: Message[];
   sendMessage: (message: string) => void;
+  remotePeer: React.MutableRefObject<Peer.Instance | undefined>;
+  localPeer: React.MutableRefObject<Peer.Instance | undefined>;
 }
 export interface Message {
   message: string;

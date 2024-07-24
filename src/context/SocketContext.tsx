@@ -95,7 +95,6 @@ export const SocketContextProvider = ({
         console.error("WebSocket error:", error);
       };
     };
-
     return () => {
       console.log("Cleaning up WebSocket");
       if (socketInstance) {
@@ -332,6 +331,8 @@ export const SocketContextProvider = ({
         toggleMute,
         toggleScreenShare,
         isShareScreen,
+        remotePeer,
+        localPeer,
       }}
     >
       {children}
