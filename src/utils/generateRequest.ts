@@ -13,6 +13,11 @@ export const generateRequest = async (
   options: FetchOptions
 ) => {
   try {
+    console.log(
+      credentials.apiBaseUrl,
+      endpoint,
+      `${credentials.apiBaseUrl}/${endpoint}`
+    );
     const response = await fetch(`${credentials.apiBaseUrl}/${endpoint}`, {
       method: options.method,
       headers: {
